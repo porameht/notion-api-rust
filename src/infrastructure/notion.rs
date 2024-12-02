@@ -52,13 +52,20 @@ impl NotionClient {
                     },
                 }],
             },
+            CreatedAt: NotionDate {
+                r#type: "date".to_string(),
+                date: NotionDateTime {
+                    start: spin_result.created_at.clone(),
+                },
+            },
         }
     }
 }
 
 #[async_trait]
 impl NotionRepository for NotionClient {
-    async fn create_entry(&self, spin_result: SpinResult) -> Result<(), Error> {
+    async fn create_entry(&self, mut spin_result: SpinResult) -> Result<(), Error> {
+        spin_result.created_at = chrono::Utc::now().to_rfc3339();
         let properties = self.build_properties(&spin_result);
         
         let response = self.client
@@ -120,12 +127,18 @@ impl NotionRepository for NotionClient {
                 .as_str()
                 .unwrap_or("")
                 .to_string();
+            
+            let created_at = properties["CreatedAt"]["date"]["start"]
+                .as_str()
+                .unwrap_or("")
+                .to_string();
 
             spin_results.push(SpinResult {
                 name,
                 phone_number,
                 ticket,
                 reward,
+                created_at,
             });
         }
 
