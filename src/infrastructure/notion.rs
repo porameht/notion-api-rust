@@ -1,6 +1,7 @@
 use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::json;
+use chrono::{Utc, DateTime};
 
 use crate::domain::{
     models::*,
@@ -12,15 +13,17 @@ pub struct NotionClient {
     client: Client,
     database_id: String,
     api_token: String,
+    daily_spin_limit: i32,
 }
 
 impl NotionClient {
-    pub fn new(database_id: String, api_token: String) -> Self {
+    pub fn new(database_id: String, api_token: String, daily_spin_limit: i32) -> Self {
         let client = Client::new();
         Self {
             client,
             database_id,
             api_token,
+            daily_spin_limit,
         }
     }
 
@@ -54,11 +57,55 @@ impl NotionClient {
             },
         }
     }
+
+    async fn has_reached_spin_limit(&self, phone_number: &str) -> Result<bool, Error> {
+        let today = Utc::now().date_naive();
+        
+        let response = self.client
+            .post(format!("https://api.notion.com/v1/databases/{}/query", self.database_id))
+            .header("Authorization", format!("Bearer {}", self.api_token))
+            .header("Notion-Version", "2022-06-28")
+            .json(&json!({
+                "filter": {
+                    "and": [
+                        {
+                            "property": "Phone",
+                            "phone_number": {
+                                "equals": phone_number
+                            }
+                        },
+                        {
+                            "property": "CreatedAt",
+                            "date": {
+                                "after": format!("{}T00:00:00Z", today),
+                                "before": format!("{}T23:59:59Z", today)
+                            }
+                        }
+                    ]
+                }
+            }))
+            .send()
+            .await?;
+
+        if !response.status().is_success() {
+            return Err(Error::NotionApi(response.text().await?));
+        }
+
+        let data: serde_json::Value = response.json().await?;
+        let results = data["results"].as_array()
+            .ok_or_else(|| Error::NotionApi("Invalid response format".to_string()))?;
+
+        Ok(results.len() >= self.daily_spin_limit as usize)
+    }
 }
 
 #[async_trait]
 impl NotionRepository for NotionClient {
     async fn create_entry(&self, spin_result: SpinResult) -> Result<(), Error> {
+        if self.has_reached_spin_limit(&spin_result.phone_number).await? {
+            return Err(Error::SpinLimitReached);
+        }
+
         let properties = self.build_properties(&spin_result);
         
         let response = self.client

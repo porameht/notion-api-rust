@@ -20,8 +20,12 @@ async fn main() {
         .expect("NOTION_DATABASE_ID must be set");
     let api_token = env::var("NOTION_API_TOKEN")
         .expect("NOTION_API_TOKEN must be set");
+    let daily_spin_limit = env::var("DAILY_SPIN_LIMIT")
+        .unwrap_or_else(|_| "1".to_string())
+        .parse::<i32>()
+        .unwrap_or(1);
 
-    let notion_client = NotionClient::new(database_id, api_token);
+    let notion_client = NotionClient::new(database_id, api_token, daily_spin_limit);
     let notion_service = NotionService::new(notion_client);
     
     let app = api::routes::create_router(notion_service);
