@@ -35,6 +35,7 @@ Create a `.env` file in the root directory:
 ```
 NOTION_API_KEY=your_notion_api_key
 NOTION_DATABASE_ID=your_notion_database_id
+DAILY_SPIN_LIMIT=3 # Optional: defaults to 1
 ```
 
 

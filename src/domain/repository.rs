@@ -11,6 +11,8 @@ pub trait NotionRepository {
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
+    #[error("Daily spin limit reached")]
+    SpinLimitReached,
     #[error("Notion API error: {0}")]
     NotionApi(String),
     #[error("Serialization error: {0}")]

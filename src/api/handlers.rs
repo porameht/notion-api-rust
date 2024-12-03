@@ -5,6 +5,7 @@ use axum::{
 };
 use crate::{
     domain::models::SpinResult,
+    domain::repository::Error,
     application::services::NotionService,
     infrastructure::notion::NotionClient,
 };
@@ -13,11 +14,11 @@ pub async fn create_spin_result(
     State(service): State<NotionService<NotionClient>>,
     Json(spin_result): Json<SpinResult>,
 ) -> Result<StatusCode, StatusCode> {
-    service
-        .create_spin_result(spin_result)
-        .await
-        .map(|_| StatusCode::CREATED)
-        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)
+    match service.create_spin_result(spin_result).await {
+        Ok(_) => Ok(StatusCode::CREATED),
+        Err(Error::SpinLimitReached) => Err(StatusCode::TOO_MANY_REQUESTS),
+        Err(_) => Err(StatusCode::INTERNAL_SERVER_ERROR),
+    }
 }
 
 pub async fn get_spin_results(
