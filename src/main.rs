@@ -8,14 +8,28 @@ use std::env;
 use infrastructure::notion::NotionClient;
 use application::services::NotionService;
 use axum::{Router, routing::{get, post}};
+use tracing::{info, Level};
+use tracing_subscriber::{FmtSubscriber, EnvFilter};
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
     
-    // Initialize tracing
-    tracing_subscriber::fmt::init();
+    // Initialize structured logging
+    FmtSubscriber::builder()
+        .with_env_filter(EnvFilter::from_default_env()
+            .add_directive(Level::INFO.into())
+            .add_directive("notion_crud=debug".parse().unwrap()))
+        .with_file(true)
+        .with_line_number(true)
+        .with_thread_ids(true)
+        .with_thread_names(true)
+        .with_target(false)
+        .pretty()
+        .init();
 
+    info!("Starting Notion CRUD API server");
+    
     let database_id = env::var("NOTION_DATABASE_ID")
         .expect("NOTION_DATABASE_ID must be set");
     let api_token = env::var("NOTION_API_TOKEN")

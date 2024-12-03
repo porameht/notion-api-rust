@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::json;
 use chrono::{Utc, DateTime};
+use tracing::{info, warn, error, debug};
 
 use crate::domain::{
     models::*,
@@ -59,6 +60,7 @@ impl NotionClient {
     }
 
     async fn has_reached_spin_limit(&self, phone_number: &str) -> Result<bool, Error> {
+        debug!("Checking spin limit for phone number: {}", phone_number);
         let today = Utc::now().date_naive();
         
         let response = self.client
@@ -95,14 +97,25 @@ impl NotionClient {
         let results = data["results"].as_array()
             .ok_or_else(|| Error::NotionApi("Invalid response format".to_string()))?;
 
-        Ok(results.len() >= self.daily_spin_limit as usize)
+        let count = results.len();
+        debug!("Found {} spins today for phone number: {}", count, phone_number);
+        Ok(count >= self.daily_spin_limit as usize)
     }
 }
 
 #[async_trait]
 impl NotionRepository for NotionClient {
     async fn create_entry(&self, spin_result: SpinResult) -> Result<(), Error> {
+        info!(
+            "Creating new spin result for {} with ticket {}",
+            spin_result.name, spin_result.ticket
+        );
+
         if self.has_reached_spin_limit(&spin_result.phone_number).await? {
+            warn!(
+                "Daily spin limit reached for phone number: {}",
+                spin_result.phone_number
+            );
             return Err(Error::SpinLimitReached);
         }
 
@@ -120,13 +133,18 @@ impl NotionRepository for NotionClient {
             .await?;
 
         if !response.status().is_success() {
-            return Err(Error::NotionApi(response.text().await?));
+            let error_text = response.text().await?;
+            error!("Notion API error: {}", error_text);
+            return Err(Error::NotionApi(error_text));
         }
 
+        info!("Successfully created spin result");
         Ok(())
     }
 
     async fn get_entries(&self) -> Result<Vec<SpinResult>, Error> {
+        debug!("Fetching all spin results");
+        
         let response = self.client
             .post(format!("https://api.notion.com/v1/databases/{}/query", self.database_id))
             .header("Authorization", format!("Bearer {}", self.api_token))
@@ -176,10 +194,16 @@ impl NotionRepository for NotionClient {
             });
         }
 
+        info!("Successfully fetched {} spin results", spin_results.len());
         Ok(spin_results)
     }
 
     async fn update_entry(&self, page_id: &str, spin_result: SpinResult) -> Result<(), Error> {
+        info!(
+            "Updating spin result {} for {} with ticket {}",
+            page_id, spin_result.name, spin_result.ticket
+        );
+        
         let properties = self.build_properties(&spin_result);
         
         let response = self.client
@@ -193,13 +217,18 @@ impl NotionRepository for NotionClient {
             .await?;
 
         if !response.status().is_success() {
-            return Err(Error::NotionApi(response.text().await?));
+            let error_text = response.text().await?;
+            error!("Failed to update spin result {}: {}", page_id, error_text);
+            return Err(Error::NotionApi(error_text));
         }
 
+        info!("Successfully updated spin result {}", page_id);
         Ok(())
     }
 
     async fn delete_entry(&self, page_id: &str) -> Result<(), Error> {
+        info!("Deleting spin result {}", page_id);
+        
         let response = self.client
             .patch(format!("https://api.notion.com/v1/pages/{}", page_id))
             .header("Authorization", format!("Bearer {}", self.api_token))
@@ -211,9 +240,12 @@ impl NotionRepository for NotionClient {
             .await?;
 
         if !response.status().is_success() {
-            return Err(Error::NotionApi(response.text().await?));
+            let error_text = response.text().await?;
+            error!("Failed to delete spin result {}: {}", page_id, error_text);
+            return Err(Error::NotionApi(error_text));
         }
 
+        info!("Successfully deleted spin result {}", page_id);
         Ok(())
     }
 } 
