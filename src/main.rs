@@ -43,7 +43,11 @@ async fn main() {
     let app = api::routes::create_router(notion_service);
 
     // run our app with hyper
-    let listener = tokio::net::TcpListener::bind("127.0.0.1:3000")
+    let port = env::var("PORT").unwrap_or_else(|_| "80".to_string());
+    let addr = format!("0.0.0.0:{}", port);
+    info!("Server will listen on {}", addr);
+    
+    let listener = tokio::net::TcpListener::bind(addr)
         .await
         .unwrap();
     tracing::debug!("listening on {}", listener.local_addr().unwrap());
