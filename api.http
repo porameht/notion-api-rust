@@ -6,7 +6,7 @@ Content-Type: application/json
     "key": "123123",
     "datetime": "2025-03-06T00:00:00Z",
     "number": 100,
-    "isWin": true,
+    "is_win": true,
     "checked": false
 }
 
@@ -21,7 +21,7 @@ Content-Type: application/json
     "key": "1234567890",
     "datetime": "2025-03-06T00:00:00Z",
     "number": 200,
-    "isWin": true,
+    "is_win": true,
     "checked": true
 }
 

@@ -1,7 +1,7 @@
 use async_trait::async_trait;
 use reqwest::Client;
 use serde_json::json;
-use chrono::{Utc, DateTime};
+use chrono::Utc;
 use tracing::{info, warn, error, debug};
 
 use crate::domain::{
@@ -49,9 +49,9 @@ impl NotionClient {
                 r#type: "number".to_string(),
                 number: spin_result.number,
             },
-            isWin: NotionCheckbox {
+            is_win: NotionCheckbox {
                 r#type: "checkbox".to_string(),
-                checkbox: spin_result.isWin,
+                checkbox: spin_result.is_win,
             },
             checked: NotionCheckbox {
                 r#type: "checkbox".to_string(),
@@ -194,7 +194,7 @@ impl NotionRepository for NotionClient {
                 key,
                 datetime,
                 number,
-                isWin: is_win,
+                is_win,
                 checked,
             });
         }

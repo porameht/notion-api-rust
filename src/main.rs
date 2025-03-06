@@ -7,7 +7,6 @@ use dotenv::dotenv;
 use std::env;
 use infrastructure::notion::NotionClient;
 use application::services::NotionService;
-use axum::{Router, routing::{get, post}};
 use tracing::{info, Level};
 use tracing_subscriber::{FmtSubscriber, EnvFilter};
 
@@ -15,7 +14,6 @@ use tracing_subscriber::{FmtSubscriber, EnvFilter};
 async fn main() {
     dotenv().ok();
     
-    // Initialize structured logging
     FmtSubscriber::builder()
         .with_env_filter(EnvFilter::from_default_env()
             .add_directive(Level::INFO.into())

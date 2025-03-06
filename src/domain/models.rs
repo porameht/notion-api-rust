@@ -5,7 +5,7 @@ pub struct SpinResult {
     pub key: String,
     pub datetime: String,
     pub number: i32,
-    pub isWin: bool,
+    pub is_win: bool,
     pub checked: bool,
 }
 
@@ -14,7 +14,7 @@ pub struct NotionProperties {
     pub key: NotionTitle,
     pub datetime: NotionDate,
     pub number: NotionNumber,
-    pub isWin: NotionCheckbox,
+    pub is_win: NotionCheckbox,
     pub checked: NotionCheckbox,
 }
 

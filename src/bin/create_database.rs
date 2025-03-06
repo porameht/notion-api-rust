@@ -81,7 +81,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                         "format": "number"
                     }
                 },
-                "isWin": {
+                "is_win": {
                     "checkbox": {}
                 },
                 "checked": {
@@ -95,7 +95,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
     if response.status().is_success() {
         let database_info: serde_json::Value = response.json().await?;
         println!("✅ Database created successfully!");
-        println!("Database ID: {}", database_info["id"].as_str().unwrap_or("Unknown"));
+        println!("🚀 Database ID: {}", database_info["id"].as_str().unwrap_or("Unknown"));
         println!("Make sure to update your .env file with this new database ID as NOTION_PAGE_ID");
     } else {
         let error_text = response.text().await?;
