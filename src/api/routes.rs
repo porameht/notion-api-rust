@@ -5,13 +5,39 @@ use axum::{
 use tower_http::cors::{CorsLayer, Any};
 use crate::application::services::NotionService;
 use crate::infrastructure::notion::NotionClient;
+use std::env;
+use http::{HeaderValue, Method};
 
 pub fn create_router(service: NotionService<NotionClient>) -> Router {
-    // Add CORS middleware
     let cors = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
+        .allow_methods([
+            Method::GET,
+            Method::POST,
+            Method::PUT,
+            Method::DELETE,
+            Method::OPTIONS,
+        ]);
+    
+    let cors = match env::var("ALLOWED_ORIGINS") {
+        Ok(origins) => {
+            let origins: Vec<HeaderValue> = origins
+                .split(',')
+                .filter_map(|origin| origin.trim().parse().ok())
+                .collect();
+            
+            if origins.is_empty() {
+                cors.allow_origin(Any)
+            } else {
+                origins.iter().fold(cors, |cors, origin| {
+                    cors.allow_origin(origin.clone())
+                })
+            }
+        },
+        Err(_) => {
+            cors.allow_origin(Any)
+        }
+    }
+    .allow_headers(Any);
 
     Router::new()
         .route("/spin-results", post(super::handlers::create_spin_result))

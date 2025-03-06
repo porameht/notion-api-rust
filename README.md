@@ -41,6 +41,7 @@ Create a `.env` file in the root directory:
 NOTION_API_TOKEN=your_notion_api_token
 NOTION_DATABASE_ID=your_notion_database_id
 DAILY_SPIN_LIMIT=3 # Optional: defaults to 1
+ALLOWED_ORIGINS=http://localhost:3000,https://yourdomain.com # Optional: comma-separated list of allowed origins for CORS
 ```
 
 ## Installation
