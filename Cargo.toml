@@ -3,6 +3,10 @@ name = "notion-crud"
 version = "0.1.0"
 edition = "2021"
 
+[[bin]]
+name = "create_database"
+path = "src/bin/create_database.rs"
+
 [dependencies]
 axum = "0.7"
 tokio = { version = "1.0", features = ["full"] }
@@ -15,4 +19,5 @@ thiserror = "1.0"
 dotenv = "0.15"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
-chrono = { version = "0.4", features = ["serde"] } 
+chrono = { version = "0.4", features = ["serde"] }
+clap = { version = "4.4", features = ["derive"] } 
