@@ -1,16 +1,19 @@
 # Build stage
-FROM rust:1.72-slim as builder
+FROM rust:latest as builder
 
 WORKDIR /usr/src/app
 
-# Copy the Cargo files for dependency caching
-COPY Cargo.toml Cargo.lock ./
+# Copy only Cargo.toml first (since Cargo.lock may not exist)
+COPY Cargo.toml ./
 
-# Create dummy src/main.rs to build dependencies
-RUN mkdir -p src && \
+# Create dummy src structure with all required files
+RUN mkdir -p src/bin && \
     echo "fn main() {}" > src/main.rs && \
-    cargo build --release && \
-    rm -rf src
+    echo "fn main() {}" > src/bin/create_database.rs && \
+    # Build dependencies only
+    cargo build && \
+    # Remove the dummy source files, but keep the generated artifacts
+    find src -type f -name "*.rs" -delete
 
 # Copy the actual source code
 COPY . .
