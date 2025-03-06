@@ -15,12 +15,17 @@ A clean architecture implementation of a REST API that interfaces with Notion's 
 ```
 notion-crud/
 ├── src/
-│ ├── domain/ # Business logic and interfaces
-│ ├── application/ # Use cases
-│ ├── infrastructure/ # External implementations
-│ └── api/ # HTTP layer
+│   ├── main.rs             # Application entry point
+│   ├── domain/             # Business logic and interfaces
+│   ├── application/        # Use cases and services
+│   ├── infrastructure/     # External implementations (Notion client)
+│   ├── api/                # HTTP layer (routes and handlers)
+│   └── bin/                # Additional binary executables
+├── Cargo.toml              # Project dependencies
+├── Cargo.lock              # Locked dependencies
+├── .env                    # Environment configuration
+└── Dockerfile              # Container configuration
 ```
-
 
 ## Prerequisites
 
@@ -33,11 +38,10 @@ notion-crud/
 Create a `.env` file in the root directory:
 
 ```
-NOTION_API_KEY=your_notion_api_key
+NOTION_API_TOKEN=your_notion_api_token
 NOTION_DATABASE_ID=your_notion_database_id
 DAILY_SPIN_LIMIT=3 # Optional: defaults to 1
 ```
-
 
 ## Installation
 
@@ -57,8 +61,23 @@ cargo build
 cargo run
 ```
 
-
 The server will start at `http://localhost:3000`
+
+## Docker Deployment
+
+Build and run using Docker:
+
+```bash
+# Build the image
+docker build -t notion-crud .
+
+# Run the container
+docker run -p 80:80 \
+  -e NOTION_DATABASE_ID=your_database_id \
+  -e NOTION_API_TOKEN=your_api_token \
+  -e DAILY_SPIN_LIMIT=1 \
+  notion-crud
+```
 
 ## API Endpoints
 
@@ -75,13 +94,13 @@ The server will start at `http://localhost:3000`
 
 ```json
 {
-"name": "John Doe",
-"phone_number": "+1234567890",
-"ticket": 123,
-"reward": "Prize A"
+    "key": "123123",
+    "datetime": "2025-03-06T00:00:00Z",
+    "number": 100,
+    "is_win": true,
+    "checked": false
 }
 ```
-
 
 ## Error Handling
 
