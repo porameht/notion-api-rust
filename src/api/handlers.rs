@@ -52,4 +52,8 @@ pub async fn delete_spin_result(
     }
 }
 
+pub async fn get_root() -> &'static str {
+    "Notion API is running"
+}
+
 // Implement other handlers... 

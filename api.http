@@ -13,6 +13,9 @@ Content-Type: application/json
 ### Get all spin results
 GET http://localhost:3000/spin-results
 
+### Get root
+GET http://localhost:3000/
+
 ### Update a spin result
 PUT http://localhost:3000/spin-results/your-page-id-here
 Content-Type: application/json

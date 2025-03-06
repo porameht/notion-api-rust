@@ -40,6 +40,7 @@ pub fn create_router(service: NotionService<NotionClient>) -> Router {
     .allow_headers(Any);
 
     Router::new()
+        .route("/", get(super::handlers::get_root))
         .route("/spin-results", post(super::handlers::create_spin_result))
         .route("/spin-results", get(super::handlers::get_spin_results))
         .route("/spin-results/:page_id", put(super::handlers::update_spin_result))
