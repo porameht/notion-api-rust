@@ -1,0 +1,29 @@
+# Create a new spin result
+POST http://localhost:3000/spin-results
+Content-Type: application/json
+
+{
+    "key": "123123",
+    "datetime": "2025-03-06T00:00:00Z",
+    "number": 100,
+    "isWin": true,
+    "checked": false
+}
+
+### Get all spin results
+GET http://localhost:3000/spin-results
+
+### Update a spin result
+PUT http://localhost:3000/spin-results/your-page-id-here
+Content-Type: application/json
+
+{
+    "key": "1234567890",
+    "datetime": "2025-03-06T00:00:00Z",
+    "number": 200,
+    "isWin": true,
+    "checked": true
+}
+
+### Delete a spin result
+DELETE http://localhost:3000/spin-results/your-page-id-here

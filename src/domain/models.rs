@@ -2,18 +2,20 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SpinResult {
-    pub name: String,
-    pub phone_number: String,
-    pub ticket: i32,
-    pub reward: String,
+    pub key: String,
+    pub datetime: String,
+    pub number: i32,
+    pub isWin: bool,
+    pub checked: bool,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NotionProperties {
-    pub Name: NotionTitle,
-    pub Phone: NotionPhoneNumber,
-    pub Ticket: NotionNumber,
-    pub Reward: NotionRichText,
+    pub key: NotionTitle,
+    pub datetime: NotionDate,
+    pub number: NotionNumber,
+    pub isWin: NotionCheckbox,
+    pub checked: NotionCheckbox,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -23,15 +25,32 @@ pub struct NotionTitle {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
-pub struct NotionPhoneNumber {
+pub struct NotionDate {
     pub r#type: String,
-    pub phone_number: String,
+    pub date: NotionDateContent,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NotionDateContent {
+    pub start: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct NotionNumber {
     pub r#type: String,
     pub number: i32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NotionCheckbox {
+    pub r#type: String,
+    pub checkbox: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct NotionPhoneNumber {
+    pub r#type: String,
+    pub phone_number: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

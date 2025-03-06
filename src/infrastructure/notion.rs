@@ -30,37 +30,38 @@ impl NotionClient {
 
     fn build_properties(&self, spin_result: &SpinResult) -> NotionProperties {
         NotionProperties {
-            Name: NotionTitle {
+            key: NotionTitle {
                 r#type: "title".to_string(),
                 title: vec![NotionText {
                     r#type: "text".to_string(),
                     text: NotionTextContent {
-                        content: spin_result.name.clone(),
+                        content: spin_result.key.clone(),
                     },
                 }],
             },
-            Phone: NotionPhoneNumber {
-                r#type: "phone_number".to_string(),
-                phone_number: spin_result.phone_number.clone(),
+            datetime: NotionDate {
+                r#type: "date".to_string(),
+                date: NotionDateContent {
+                    start: spin_result.datetime.clone(),
+                },
             },
-            Ticket: NotionNumber {
+            number: NotionNumber {
                 r#type: "number".to_string(),
-                number: spin_result.ticket,
+                number: spin_result.number,
             },
-            Reward: NotionRichText {
-                r#type: "rich_text".to_string(),
-                rich_text: vec![NotionText {
-                    r#type: "text".to_string(),
-                    text: NotionTextContent {
-                        content: spin_result.reward.clone(),
-                    },
-                }],
+            isWin: NotionCheckbox {
+                r#type: "checkbox".to_string(),
+                checkbox: spin_result.isWin,
+            },
+            checked: NotionCheckbox {
+                r#type: "checkbox".to_string(),
+                checkbox: spin_result.checked,
             },
         }
     }
 
-    async fn has_reached_spin_limit(&self, phone_number: &str) -> Result<bool, Error> {
-        debug!("Checking spin limit for phone number: {}", phone_number);
+    async fn has_reached_spin_limit(&self, key: &str) -> Result<bool, Error> {
+        debug!("Checking spin limit for key: {}", key);
         let today = Utc::now().date_naive();
         
         let response = self.client
@@ -71,13 +72,13 @@ impl NotionClient {
                 "filter": {
                     "and": [
                         {
-                            "property": "Phone",
-                            "phone_number": {
-                                "equals": phone_number
+                            "property": "key",
+                            "title": {
+                                "equals": key
                             }
                         },
                         {
-                            "property": "CreatedAt",
+                            "property": "datetime",
                             "date": {
                                 "after": format!("{}T00:00:00Z", today),
                                 "before": format!("{}T23:59:59Z", today)
@@ -98,7 +99,7 @@ impl NotionClient {
             .ok_or_else(|| Error::NotionApi("Invalid response format".to_string()))?;
 
         let count = results.len();
-        debug!("Found {} spins today for phone number: {}", count, phone_number);
+        debug!("Found {} spins today for key: {}", count, key);
         Ok(count >= self.daily_spin_limit as usize)
     }
 }
@@ -107,14 +108,14 @@ impl NotionClient {
 impl NotionRepository for NotionClient {
     async fn create_entry(&self, spin_result: SpinResult) -> Result<(), Error> {
         info!(
-            "Creating new spin result for {} with ticket {}",
-            spin_result.name, spin_result.ticket
+            "Creating new spin result for key {} with number {}",
+            spin_result.key, spin_result.number
         );
 
-        if self.has_reached_spin_limit(&spin_result.phone_number).await? {
+        if self.has_reached_spin_limit(&spin_result.key).await? {
             warn!(
-                "Daily spin limit reached for phone number: {}",
-                spin_result.phone_number
+                "Daily spin limit reached for key: {}",
+                spin_result.key
             );
             return Err(Error::SpinLimitReached);
         }
@@ -167,30 +168,34 @@ impl NotionRepository for NotionClient {
         for result in results {
             let properties = &result["properties"];
             
-            let name = properties["Name"]["title"][0]["text"]["content"]
+            let key = properties["key"]["title"][0]["text"]["content"]
                 .as_str()
                 .unwrap_or("")
                 .to_string();
             
-            let phone_number = properties["Phone"]["phone_number"]
+            let datetime = properties["datetime"]["date"]["start"]
                 .as_str()
                 .unwrap_or("")
                 .to_string();
             
-            let ticket = properties["Ticket"]["number"]
+            let number = properties["number"]["number"]
                 .as_i64()
                 .unwrap_or(0) as i32;
             
-            let reward = properties["Reward"]["rich_text"][0]["text"]["content"]
-                .as_str()
-                .unwrap_or("")
-                .to_string();
+            let is_win = properties["isWin"]["checkbox"]
+                .as_bool()
+                .unwrap_or(false);
+                
+            let checked = properties["checked"]["checkbox"]
+                .as_bool()
+                .unwrap_or(false);
 
             spin_results.push(SpinResult {
-                name,
-                phone_number,
-                ticket,
-                reward,
+                key,
+                datetime,
+                number,
+                isWin: is_win,
+                checked,
             });
         }
 
@@ -200,8 +205,8 @@ impl NotionRepository for NotionClient {
 
     async fn update_entry(&self, page_id: &str, spin_result: SpinResult) -> Result<(), Error> {
         info!(
-            "Updating spin result {} for {} with ticket {}",
-            page_id, spin_result.name, spin_result.ticket
+            "Updating spin result {} for key {} with number {}",
+            page_id, spin_result.key, spin_result.number
         );
         
         let properties = self.build_properties(&spin_result);
