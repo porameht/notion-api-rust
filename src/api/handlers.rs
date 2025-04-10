@@ -64,7 +64,7 @@ pub async fn spin_result(
 ) -> Result<Json<SpinResponse>, StatusCode> {
     // Generate three random numbers using a thread-safe RNG
     let mut rng = SmallRng::from_entropy();
-    let win_chance = 0.01; // 1% chance to win
+    let win_chance = 0.00; // 0% chance to win
     let lucky_string = "5".to_string();
     
     // Determine if this is a winning spin
