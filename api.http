@@ -30,3 +30,11 @@ Content-Type: application/json
 
 ### Delete a spin result
 DELETE http://localhost:3000/spin-results/your-page-id-here
+
+### Spin result
+POST http://localhost:3000/spin-result
+Content-Type: application/json
+
+{
+    "key": "1234567890"
+}
