@@ -1,4 +1,12 @@
 use serde::{Deserialize, Serialize};
+use std::hash::Hash;
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum GameType {
+    Spin,
+    Wheel,
+    // Add more games here in the future
+}
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SpinResult {
@@ -7,6 +15,9 @@ pub struct SpinResult {
     pub number: i32,
     pub is_win: bool,
     pub checked: bool,
+    // Optional field to store which game this result is for
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub game_type: Option<String>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -17,6 +28,18 @@ pub struct SpinRequest {
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SpinResponse {
     pub numbers: Vec<String>,
+    pub is_win: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WheelRequest {
+    pub key: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WheelResponse {
+    pub prize_index: usize,
+    pub prize_name: String,
     pub is_win: bool,
 }
 

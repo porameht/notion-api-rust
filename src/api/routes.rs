@@ -48,6 +48,9 @@ pub fn create_router(service: NotionService<NotionClient>) -> Router {
         .route("/spin-result", post(|state, json| async move {
             super::handlers::spin_result(state, json).await
         }))
+        .route("/wheel-result", post(|state, json| async move {
+            super::handlers::wheel_result(state, json).await
+        }))
         .layer(cors)
         .with_state(service)
 } 

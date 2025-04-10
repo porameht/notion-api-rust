@@ -5,10 +5,12 @@ mod api;
 
 use dotenv::dotenv;
 use std::env;
+use std::collections::HashMap;
 use infrastructure::notion::NotionClient;
 use application::services::NotionService;
 use tracing::{info, Level};
 use tracing_subscriber::{FmtSubscriber, EnvFilter};
+use crate::domain::models::GameType;
 
 #[tokio::main]
 async fn main() {
@@ -28,8 +30,33 @@ async fn main() {
 
     info!("Starting Notion CRUD API server");
     
-    let database_id = env::var("NOTION_DATABASE_ID")
-        .expect("NOTION_DATABASE_ID must be set");
+    // Read database IDs for each game type
+    let mut database_ids = HashMap::new();
+    
+    // Check for the legacy database ID first (for backward compatibility)
+    if let Ok(legacy_db_id) = env::var("NOTION_DATABASE_ID") {
+        info!("Found legacy database ID, using for all game types");
+        database_ids.insert(GameType::Spin, legacy_db_id.clone());
+        database_ids.insert(GameType::Wheel, legacy_db_id);
+    } else {
+        // Read specific database IDs for each game
+        if let Ok(spin_db_id) = env::var("NOTION_DATABASE_ID_SPIN") {
+            info!("Using dedicated database for spin game");
+            database_ids.insert(GameType::Spin, spin_db_id);
+        } else {
+            panic!("NOTION_DATABASE_ID_SPIN must be set if NOTION_DATABASE_ID is not defined");
+        }
+        
+        if let Ok(wheel_db_id) = env::var("NOTION_DATABASE_ID_WHEEL") {
+            info!("Using dedicated database for wheel game");
+            database_ids.insert(GameType::Wheel, wheel_db_id);
+        } else {
+            panic!("NOTION_DATABASE_ID_WHEEL must be set if NOTION_DATABASE_ID is not defined");
+        }
+        
+        // Additional game types can be added here in the future
+    }
+    
     let api_token = env::var("NOTION_API_TOKEN")
         .expect("NOTION_API_TOKEN must be set");
     let daily_spin_limit = env::var("DAILY_SPIN_LIMIT")
@@ -37,7 +64,7 @@ async fn main() {
         .parse::<i32>()
         .unwrap_or(1);
 
-    let notion_client = NotionClient::new(database_id, api_token, daily_spin_limit);
+    let notion_client = NotionClient::new(database_ids, api_token, daily_spin_limit);
     let notion_service = NotionService::new(notion_client);
     
     let app = api::routes::create_router(notion_service);

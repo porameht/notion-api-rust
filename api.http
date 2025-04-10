@@ -38,3 +38,11 @@ Content-Type: application/json
 {
     "key": "1234567890"
 }
+
+### Wheel result
+POST http://localhost:3000/wheel-result
+Content-Type: application/json
+
+{
+    "key": "1234567890"
+}

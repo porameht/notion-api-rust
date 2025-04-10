@@ -1,12 +1,12 @@
 use async_trait::async_trait;
-use crate::domain::models::SpinResult;
+use crate::domain::models::{SpinResult, GameType};
 
 #[async_trait]
 pub trait NotionRepository {
-    async fn create_entry(&self, spin_result: SpinResult) -> Result<(), Error>;
-    async fn get_entries(&self) -> Result<Vec<SpinResult>, Error>;
-    async fn update_entry(&self, page_id: &str, spin_result: SpinResult) -> Result<(), Error>;
-    async fn delete_entry(&self, page_id: &str) -> Result<(), Error>;
+    async fn create_entry(&self, spin_result: SpinResult, game_type: GameType) -> Result<(), Error>;
+    async fn get_entries(&self, game_type: GameType) -> Result<Vec<SpinResult>, Error>;
+    async fn update_entry(&self, page_id: &str, spin_result: SpinResult, game_type: GameType) -> Result<(), Error>;
+    async fn delete_entry(&self, page_id: &str, game_type: GameType) -> Result<(), Error>;
 }
 
 #[derive(Debug, thiserror::Error)]
