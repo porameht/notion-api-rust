@@ -1,5 +1,5 @@
 # Create a new spin result
-POST http://localhost:3000/spin-results
+POST https://notion-api-rust.onrender.com/spin-results
 Content-Type: application/json
 
 {

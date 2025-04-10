@@ -10,6 +10,17 @@ pub struct SpinResult {
 }
 
 #[derive(Debug, Serialize, Deserialize)]
+pub struct SpinRequest {
+    pub key: Option<String>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct SpinResponse {
+    pub numbers: Vec<String>,
+    pub is_win: bool,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
 pub struct NotionProperties {
     pub key: NotionTitle,
     pub datetime: NotionDate,
